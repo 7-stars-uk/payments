@@ -8,7 +8,7 @@
   <style>
     :root{
       --bg:#000000;
-      --gold:#ffd700;
+      --gold:#ffd700;        /* bright gold */
       --line:#333333;
       --radius:12px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -22,6 +22,8 @@
       -webkit-text-size-adjust:100%;
     }
     .wrap{max-width:720px;margin:40px auto;padding:0 18px}
+
+    /* top notice */
     .note-strong{
       font-weight:800;
       font-size:17px;
@@ -29,25 +31,37 @@
       color:var(--gold);
       text-align:left;
     }
+
+    /* card */
     .panel{
       border:1px solid var(--line);
       border-radius:var(--radius);
       padding:22px;
       margin-top:16px;
     }
+
+    /* layout */
     .list{
       display:grid;
       grid-template-columns: 1fr auto;
-      gap:12px 10px;
+      gap:14px 10px;
       margin-top:6px;
     }
     @media (max-width:600px){
-      .list{grid-template-columns:1fr;gap:12px;}
-      .val{font-size:17px;}
+      .list{grid-template-columns:1fr; gap:14px;}
       .btn{width:100%;}
     }
     .row{display:contents}
-    .label{opacity:.9; align-self:center; font-size:17px;}
+
+    /* bigger, bolder labels */
+    .label{
+      align-self:center;
+      font-size:20px;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+
+    /* values */
     .val{
       font-family:var(--mono);
       border:1px solid var(--line);
@@ -58,6 +72,8 @@
       overflow:auto;
       font-size:17px;
     }
+
+    /* copy buttons with glow */
     .btn{
       border:2px solid var(--gold);
       color:var(--gold);
@@ -65,18 +81,26 @@
       border-radius:10px;
       padding:12px 14px;
       cursor:pointer;
-      font-weight:600;
+      font-weight:700;
       font-size:17px;
-      transition:0.15s ease-in-out;
+      transition:box-shadow .15s ease, transform .08s ease, background .15s ease;
+      box-shadow:0 0 0 rgba(255,215,0,0); /* base */
+      touch-action:manipulation;
     }
-    .btn:active{transform:scale(.98)}
-    .btn:hover{background:rgba(255,215,0,0.1)}
-    .controls{
-      display:flex;
-      gap:10px;
-      margin-top:18px;
-      flex-wrap:wrap;
+    .btn:hover,
+    .btn:focus-visible,
+    .btn.glow{
+      background:rgba(255,215,0,0.08);
+      box-shadow:
+        0 0 18px rgba(255,215,0,.35),
+        0 0 2px rgba(255,215,0,.85) inset;
+      outline:none;
     }
+    .btn:active{
+      transform:scale(.98);
+      box-shadow:0 0 12px rgba(255,215,0,.45), 0 0 2px rgba(255,215,0,.85) inset;
+    }
+
     .divider{height:1px; background:var(--line); margin:20px 0}
   </style>
 </head>
@@ -89,10 +113,6 @@
 
     <section class="panel">
       <div class="list" id="fields"><!-- rows inserted by JS --></div>
-
-      <div class="controls">
-        <button class="btn" id="copyAllBtn" type="button">Copy all</button>
-      </div>
     </section>
   </main>
 
@@ -105,7 +125,6 @@ const DATA = [
 ];
 
 const fields = document.getElementById('fields');
-const copyAllBtn = document.getElementById('copyAllBtn');
 
 function el(tag, cls, txt){
   const e=document.createElement(tag);
@@ -117,39 +136,43 @@ function el(tag, cls, txt){
 function render(){
   fields.innerHTML = '';
   DATA.forEach(row=>{
+    // row header: label + button
     const R = el('div','row');
     const L = el('div','label',row.label);
     const B = el('button','btn'); B.type='button'; B.textContent='Copy';
+
+    // row value
     const V = el('div','val',row.value);
+
+    // interactions
+    const glowPulse = ()=>{
+      B.classList.add('glow');
+      setTimeout(()=>B.classList.remove('glow'), 250);
+    };
 
     B.addEventListener('click', async ()=>{
       try{
         await navigator.clipboard.writeText(row.value);
-        const t=B.textContent; B.textContent='Copied!'; setTimeout(()=>B.textContent=t,1100);
+        const t=B.textContent; B.textContent='Copied!'; glowPulse();
+        setTimeout(()=>B.textContent=t,1100);
       }catch{
         alert('Copy failed. Your browser may block clipboard.');
       }
     });
+
+    // add a quick glow on touchstart for mobile feedback
+    B.addEventListener('touchstart', glowPulse, {passive:true});
 
     R.appendChild(L); R.appendChild(B);
     fields.appendChild(R);
 
     const R2 = el('div','row');
     R2.appendChild(V);
-    R2.appendChild(el('div')); // spacer
+    R2.appendChild(el('div')); // spacer for grid alignment
     fields.appendChild(R2);
   });
-
-  copyAllBtn.onclick = async ()=>{
-    const all = DATA.map(r=>`${r.label}: ${r.value}`).join('\n');
-    try{
-      await navigator.clipboard.writeText(all);
-      const t=copyAllBtn.textContent; copyAllBtn.textContent='All copied!'; setTimeout(()=>copyAllBtn.textContent=t,1100);
-    }catch{
-      alert('Copy failed. Your browser may block clipboard.');
-    }
-  };
 }
+
 render();
 </script>
 </body>
