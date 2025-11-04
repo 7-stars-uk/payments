@@ -1,132 +1,116 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="robots" content="noindex,nofollow" />
-  <title>Реквизиты для оплаты / Invoice details</title>
+  <title>Invoice details</title>
   <style>
     :root{
-      --bg:#ffffff; --txt:#111827; --muted:#6b7280; --line:#e5e7eb; --btn:#111827; --btn-txt:#ffffff;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --bg:#000000;
+      --gold:#d4af37; /* classic gold */
+      --line:#3a2d0a;
       --radius:12px;
-    }
-    @media (prefers-color-scheme: dark){
-      :root{ --bg:#0b0f17; --txt:#e5e7eb; --muted:#94a3b8; --line:#1f2937; --btn:#1f2937; --btn-txt:#e5e7eb; }
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
     *{box-sizing:border-box}
-    html,body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Arial}
-    .wrap{max-width:820px;margin:40px auto;padding:0 16px}
-    h1{margin:0 0 6px;font-size:28px}
-    p{margin:0}
-    .muted{color:var(--muted)}
-    .panel{border:1px solid var(--line); border-radius: var(--radius); padding:20px; margin-top:16px}
-    .lang{display:flex; gap:8px; margin-top:12px}
-    .lang button{border:1px solid var(--line); background:transparent; color:var(--txt); padding:6px 10px; border-radius:10px; cursor:pointer}
-    .lang button[aria-pressed="true"]{outline:2px solid var(--line)}
-    .list{display:grid; grid-template-columns: 1fr auto; gap:10px 10px; margin-top:10px}
+    html,body{margin:0;background:var(--bg);color:var(--gold);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    .wrap{max-width:820px;margin:42px auto;padding:0 16px}
+    h1{margin:14px 0 6px;font-size:28px;color:var(--gold)}
+    .note-strong{font-weight:800; font-size:16px; border:1px solid var(--line); border-radius:var(--radius); padding:12px 14px}
+    .panel{border:1px solid var(--line); border-radius:var(--radius); padding:20px; margin-top:16px}
+    .list{display:grid; grid-template-columns: 1fr auto; gap:10px 10px; margin-top:6px}
     .row{display:contents}
-    .label{color:var(--muted); align-self:center}
-    .val{font-family:var(--mono); border:1px solid var(--line); border-radius:10px; padding:10px 12px; overflow:auto}
-    .btn{border:1px solid var(--line); background:var(--btn); color:var(--btn-txt); border-radius:10px; padding:10px 12px; cursor:pointer}
+    .label{opacity:.9; align-self:center}
+    .val{font-family:var(--mono); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--gold); background:transparent; overflow:auto}
+    .btn{
+      border:2px solid var(--gold); color:var(--gold); background:transparent;
+      border-radius:10px; padding:10px 12px; cursor:pointer; font-weight:600;
+    }
     .btn:active{transform:scale(.99)}
-    .note{margin-top:12px; color:var(--muted); font-size:14px}
+    .btn:hover{box-shadow:0 0 0 2px rgba(212,175,55,.15) inset}
     .controls{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap}
-    .footer{margin-top:22px; color:var(--muted); font-size:13px}
-    a{color:inherit}
+    .footer{margin-top:18px; font-size:13px; opacity:.85}
     .divider{height:1px; background:var(--line); margin:18px 0}
+    a{color:var(--gold); text-decoration:none}
   </style>
 </head>
 <body>
   <main class="wrap" role="main">
-    <header>
-      <h1 id="title">Реквизиты для оплаты</h1>
-      <p id="subtitle" class="muted">Нажмите «Скопировать» рядом с нужным полем или «Скопировать всё» ниже</p>
-      <div class="lang" role="tablist" aria-label="Language">
-        <button id="btnRU" role="tab" aria-selected="true" aria-pressed="true" onclick="setLang('ru')">RU</button>
-        <button id="btnEN" role="tab" aria-selected="false" aria-pressed="false" onclick="setLang('en')">EN</button>
-      </div>
-    </header>
+
+    <div class="note-strong">
+      <strong>Please make sure to enter the full name (including the parentheses)!</strong>
+    </div>
+
+    <h1>Invoice payment details</h1>
 
     <section class="panel" aria-labelledby="title">
       <div class="list" id="fields"><!-- rows inserted by JS --></div>
 
       <div class="controls">
-        <button class="btn" id="copyAllBtn">Скопировать всё</button>
-        <span class="note" id="note"></span>
+        <button class="btn" id="copyAllBtn" type="button">Copy all</button>
       </div>
 
       <div class="divider"></div>
-      <div class="footer">
-        <div id="footer"></div>
-        <div id="updated" class="muted" style="margin-top:6px"></div>
-      </div>
+      <div class="footer" id="updated"></div>
     </section>
   </main>
 
 <script>
-/* --- Configuration: fill in your real details once, RU & EN --- */
-const DATA = {
-  ru: {
-    title: "Реквизиты для оплаты",
-    subtitle: "Нажмите «Скопировать» рядом с полем или «Скопировать всё».",
-    note: "Обязательно указывайте reference/номер счёта в назначении платежа.",
-    footer: "Вопросы по оплате: billing@yourdomain.com",
-    rows: [
-      {label:"Краткое название", value:"ВАША КОМПАНИЯ GmbH"},
-      {label:"Полное название (DE)", value:"Ihre Sehr Lange Firmenbezeichnung Gesellschaft mit beschränkter Haftung"},
-      {label:"Адрес", value:"Musterstraße 12, 10115 Berlin, Germany"},
-      {label:"IBAN", value:"DE12 3456 7890 1234 5678 90"},
-      {label:"BIC / SWIFT", value:"ABCDEFGHXXX"},
-      {label:"Банк", value:"Musterbank AG"},
-      {label:"Назначение платежа / reference", value:"INV-2025-00123  |  Client: ACME LTD"}
-    ]
-  },
-  en: {
-    title: "Invoice payment details",
-    subtitle: "Click “Copy” next to any field or use “Copy all”.",
-    note: "Please include the payment reference (invoice number) in the transfer.",
-    footer: "Billing questions: billing@yourdomain.com",
-    rows: [
-      {label:"Company (short)", value:"YOUR COMPANY GmbH"},
-      {label:"Registered name (DE)", value:"Ihre Sehr Lange Firmenbezeichnung Gesellschaft mit beschränkter Haftung"},
-      {label:"Registered address", value:"Musterstraße 12, 10115 Berlin, Germany"},
-      {label:"IBAN", value:"DE12 3456 7890 1234 5678 90"},
-      {label:"BIC / SWIFT", value:"ABCDEFGHXXX"},
-      {label:"Bank", value:"Musterbank AG"},
-      {label:"Payment reference", value:"INV-2025-00123  |  Client: ACME LTD"}
-    ]
-  }
-};
+/* ---- Fill your real values below ---- */
+const DATA = [
+  {label:"Name",            value:"YOUR COMPANY GmbH (YOUR SHORT NAME)"},
+  {label:"Account Number",  value:"12345678"},
+  {label:"Sort Code",       value:"12-34-56"},
+  {label:"RevTag",          value:"INV-2025-00123 | Client: ACME LTD"}
+];
 
-/* --- Render & interactions --- */
 const fields = document.getElementById('fields');
-const btnRU = document.getElementById('btnRU');
-const btnEN = document.getElementById('btnEN');
 const copyAllBtn = document.getElementById('copyAllBtn');
 
 function el(tag, cls, txt){ const e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
 
-function setLang(lang){
-  localStorage.setItem('lang', lang);
-  render(lang);
-}
-
-function render(lang){
-  const d = DATA[lang];
-  document.documentElement.lang = lang === 'ru' ? 'ru' : 'en';
-  document.getElementById('title').textContent = d.title;
-  document.getElementById('subtitle').textContent = d.subtitle;
-  document.getElementById('note').textContent = d.note;
-  document.getElementById('footer').textContent = d.footer;
-
-  btnRU.setAttribute('aria-pressed', String(lang==='ru'));
-  btnEN.setAttribute('aria-pressed', String(lang==='en'));
-  btnRU.setAttribute('aria-selected', String(lang==='ru'));
-  btnEN.setAttribute('aria-selected', String(lang==='en'));
-
+function render(){
   fields.innerHTML = '';
-  d.rows.forEach(row=>{
+  DATA.forEach(row=>{
     const R = el('div','row');
     const L = el('div','label',row.label);
-    const B = el('button','btn'); B.type='button'; B.tex
+    const B = el('button','btn'); B.type='button'; B.textContent='Copy';
+    const V = el('div','val',row.value);
+
+    B.addEventListener('click', async ()=>{
+      try{
+        await navigator.clipboard.writeText(row.value);
+        const t=B.textContent; B.textContent='Copied!'; setTimeout(()=>B.textContent=t,1100);
+      }catch{ alert('Copy failed. Your browser may block clipboard.'); }
+    });
+
+    R.appendChild(L); R.appendChild(B);
+    fields.appendChild(R);
+
+    const R2 = el('div','row');
+    R2.appendChild(V);
+    R2.appendChild(el('div')); // grid spacer
+    fields.appendChild(R2);
+  });
+
+  // Copy all button
+  copyAllBtn.onclick = async ()=>{
+    const all = DATA.map(r=>`${r.label}: ${r.value}`).join('\n');
+    try{
+      await navigator.clipboard.writeText(all);
+      const t=copyAllBtn.textContent; copyAllBtn.textContent='All copied!'; setTimeout(()=>copyAllBtn.textContent=t,1100);
+    }catch{ alert('Copy failed. Your browser may block clipboard.'); }
+  };
+
+  // Last updated
+  const u = new Date(document.lastModified);
+  const pad = n => String(n).padStart(2,'0');
+  const stamp = `${pad(u.getDate())}.${pad(u.getMonth()+1)}.${u.getFullYear()} ${pad(u.getHours())}:${pad(u.getMinutes())}`;
+  document.getElementById('updated').textContent = 'Last updated: ' + stamp;
+}
+
+render();
+</script>
+</body>
+</html>
