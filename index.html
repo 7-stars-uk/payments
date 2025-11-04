@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!-- Чтобы страницу не индексировали поисковики (оставьте, если нужны “только по ссылке”) -->
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Реквизиты для оплаты / Invoice details</title>
+  <style>
+    :root{--bg:#0f172a;--card:#111827;--txt:#e5e7eb;--muted:#9ca3af;--acc:#22d3ee}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Arial}
+    .wrap{max-width:860px;margin:40px auto;padding:24px}
+    .card{background:var(--card);border-radius:16px;padding:24px 20px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    h1{margin:0 0 4px;font-size:28px}
+    .muted{color:var(--muted);margin:0 0 20px}
+    .lang{display:flex;gap:8px;margin-bottom:16px}
+    .lang button{background:#1f2937;color:#e5e7eb;border:1px solid #374151;border-radius:10px;padding:8px 10px;cursor:pointer}
+    .lang button.active{border-color:var(--acc)}
+    .grid{display:grid;grid-template-columns:1fr auto;gap:10px 10px}
+    .row{display:contents}
+    .label{color:var(--muted)}
+    .value{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;background:#0b1220;border:1px solid #243045;border-radius:10px;padding:10px 12px;overflow:auto}
+    .copy{background:#0b1220;border:1px solid #243045;border-radius:10px;cursor:pointer;padding:10px 12px}
+    .copy:active{transform:scale(.99)}
+    .note{margin-top:14px;color:var(--muted);font-size:14px}
+    .section{margin-top:22px;border-top:1px solid #1f2937;padding-top:16px}
+    a{color:var(--acc);text-decoration:none}
+    .footer{margin-top:24px;color:#94a3b8;font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1 id="title">Реквизиты для оплаты</h1>
+      <p class="muted" id="subtitle">Сканируйте, копируйте — всё поля кликабельны</p>
+
+      <div class="lang">
+        <button id="btnRU" class="active" onclick="setLang('ru')">RU</button>
+        <button id="btnEN" onclick="setLang('en')">EN</button>
+      </div>
+
+      <div class="section">
+        <div class="grid" id="fields"><!-- наполняется из JS --></div>
+        <p class="note" id="note"></p>
+      </div>
+
+      <div class="footer" id="footer"></div>
+    </div>
+  </div>
+
+<script>
+const DATA = {
+  ru: {
+    title: "Реквизиты для оплаты",
+    subtitle: "Кликните по кнопке «Copy», чтобы скопировать поле.",
+    note: "Важно: указывайте референс платежа (номер счёта) в назначении.",
+    footer: "Если что-то не открывается, напишите: billing@вашдомен.com",
+    rows: [
+      {label:"Краткое название", value:"ВАША КОМПАНИЯ GmbH"},
+      {label:"Полное название (DE)", value:"Ihre Sehr Lange Firmenbezeichnung Gesellschaft mit beschränkter Haftung"},
+      {label:"Адрес", value:"Musterstraße 12, 10115 Berlin, Germany"},
+      {label:"IBAN", value:"DE12 3456 7890 1234 5678 90"},
+      {label:"BIC / SWIFT", value:"ABCDEFGHXXX"},
+      {label:"Банк", value:"Musterbank AG"},
+      {label:"Ссылка на счёт (Invoice #)", value:"INV-2025-00123"},
+      {label:"Назначение платежа (reference)", value:"INV-2025-00123  |  Client: ACME LTD"}
+    ]
+  },
+  en: {
+    title: "Invoice payment details",
+    subtitle: "Click “Copy” to copy any field.",
+    note: "Please include the payment reference (invoice number) in the transfer.",
+    footer: "Questions? Email us at billing@yourdomain.com",
+    rows: [
+      {label:"Company (short)", value:"YOUR COMPANY GmbH"},
+      {label:"Registered name (DE)", value:"Ihre Sehr Lange Firmenbezeichnung Gesellschaft mit beschränkter Haftung"},
+      {label:"Registered address", value:"Musterstraße 12, 10115 Berlin, Germany"},
+      {label:"IBAN", value:"DE12 3456 7890 1234 5678 90"},
+      {label:"BIC / SWIFT", value:"ABCDEFGHXXX"},
+      {label:"Bank", value:"Musterbank AG"},
+      {label:"Invoice #", value:"INV-2025-00123"},
+      {label:"Payment reference", value:"INV-2025-00123  |  Client: ACME LTD"}
+    ]
+  }
+};
+
+function el(tag, cls, txt){ const e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
+
+function render(lang){
+  const d = DATA[lang];
+  document.getElementById('title').textContent = d.title;
+  document.getElementById('subtitle').textContent = d.subtitle;
+  document.getElementById('note').textContent = d.note;
+  document.getElementById('footer').textContent = d.footer;
+  const fields = document.getElementById('fields');
+  fields.innerHTML = '';
+  d.rows.forEach(row=>{
+    const L = el('div','row');
+    const lab = el('div','label',row.label);
+    const copyBtn = el('button','copy','Copy');
+    const val = el('div','value',row.value);
+    copyBtn.addEventListener('click', async ()=>{
+      try { await navigator.clipboard.writeText(row.value); copyBtn.textContent='Copied!'; setTimeout(()=>copyBtn.textContent='Copy',1200);}
+      catch(e){ alert('Copy failed — your browser may block clipboard.'); }
+    });
+    L.appendChild(lab);
+    L.appendChild(copyBtn);
+    fields.appendChild(L);
+    const V = el('div','row');
+    V.appendChild(val);
+    V.appendChild(el('div')); // пустая ячейка, чтобы сетка была ровной
+    fields.appendChild(V);
+  });
+
+  // переключатель кнопок
+  document.getElementById('btnRU').classList.toggle('active', lang==='ru');
+  document.getElementById('btnEN').classList.toggle('active', lang==='en');
+}
+function setLang(l){ localStorage.setItem('lang', l); render(l); }
+render(localStorage.getItem('lang')||'ru');
+</script>
+</body>
+</html>
