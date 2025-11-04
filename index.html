@@ -23,7 +23,6 @@
     }
     .wrap{max-width:720px;margin:40px auto;padding:0 18px}
 
-    /* top notice */
     .note-strong{
       font-weight:800;
       font-size:17px;
@@ -32,7 +31,6 @@
       text-align:left;
     }
 
-    /* card */
     .panel{
       border:1px solid var(--line);
       border-radius:var(--radius);
@@ -40,16 +38,14 @@
       margin-top:16px;
     }
 
-    /* two-column header row (label + button), value on full width below */
     .list{
       display:grid;
-      grid-template-columns: 1fr auto; /* keep TWO columns even on mobile */
+      grid-template-columns: 1fr auto;
       gap:14px 12px;
       margin-top:6px;
     }
     .row{display:contents}
 
-    /* bigger, bolder labels */
     .label{
       align-self:center;
       font-size:20px;
@@ -60,9 +56,8 @@
       word-break:break-word;
     }
 
-    /* value box */
     .val{
-      grid-column: 1 / -1;        /* value spans full width below */
+      grid-column: 1 / -1;
       font-family:var(--mono);
       border:1px solid var(--line);
       border-radius:10px;
@@ -73,7 +68,6 @@
       font-size:17px;
     }
 
-    /* copy buttons with glow */
     .btn{
       border:2px solid var(--gold);
       color:var(--gold);
@@ -101,6 +95,13 @@
       transform:scale(.98);
       box-shadow:0 0 12px rgba(255,215,0,.45), 0 0 2px rgba(255,215,0,.85) inset;
     }
+
+    .footnote {
+      font-size: 12px;
+      opacity: 0.75;
+      margin-top: 4px;
+      grid-column: 1 / -1;
+    }
   </style>
 </head>
 <body>
@@ -116,12 +117,11 @@
   </main>
 
 <script>
-/* --- Your live details --- */
 const DATA = [
   {label:"Name",           value:"KlimaTec Sanierungskonzepte UG (haftungsbeschränkt)"},
   {label:"Account Number", value:"61401289"},
   {label:"Sort Code",      value:"23-01-20"},
-  {label:"RevTag",         value:"@klimatf0da"}
+  {label:"RevTag",         value:"@klimatf0da", note:"For easy payment directly in Revolut"}
 ];
 
 const fields = document.getElementById('fields');
@@ -136,14 +136,13 @@ function el(tag, cls, txt){
 function render(){
   fields.innerHTML = '';
   DATA.forEach(row=>{
-    // header line: label on the left, copy button on the right (same line)
     const L = el('div','label',row.label);
-    const B = el('button','btn'); B.type='button'; B.textContent='Copy'; B.setAttribute('aria-label','Copy '+row.label);
-
-    // value line spans full width
+    const B = el('button','btn'); 
+    B.type='button'; 
+    B.textContent='Copy'; 
+    B.setAttribute('aria-label','Copy '+row.label);
     const V = el('div','val',row.value);
 
-    // interactions
     const glowPulse = ()=>{
       B.classList.add('glow');
       setTimeout(()=>B.classList.remove('glow'), 250);
@@ -159,10 +158,14 @@ function render(){
     });
     B.addEventListener('touchstart', glowPulse, {passive:true});
 
-    // append: header cells (label + button), then value (full width)
     fields.appendChild(L);
     fields.appendChild(B);
     fields.appendChild(V);
+
+    if(row.note){
+      const N = el('div','footnote',row.note);
+      fields.appendChild(N);
+    }
   });
 }
 
