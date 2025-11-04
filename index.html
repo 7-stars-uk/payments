@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <meta name="robots" content="noindex,nofollow" />
   <title>Invoice details</title>
   <style>
     :root{
       --bg:#000000;
-      --gold:#ffd700; /* lighter, bright gold */
+      --gold:#ffd700;
       --line:#333333;
       --radius:12px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -18,55 +18,66 @@
       margin:0;
       background:var(--bg);
       color:var(--gold);
-      font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      font:18px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      -webkit-text-size-adjust:100%;
     }
-    .wrap{max-width:820px;margin:42px auto;padding:0 16px}
+    .wrap{max-width:720px;margin:40px auto;padding:0 18px}
     .note-strong{
       font-weight:800;
-      font-size:16px;
-      padding:12px 0 4px 0;
+      font-size:17px;
+      padding:12px 0 6px 0;
       color:var(--gold);
       text-align:left;
     }
     .panel{
       border:1px solid var(--line);
       border-radius:var(--radius);
-      padding:20px;
+      padding:22px;
       margin-top:16px;
     }
     .list{
       display:grid;
       grid-template-columns: 1fr auto;
-      gap:10px 10px;
+      gap:12px 10px;
       margin-top:6px;
     }
+    @media (max-width:600px){
+      .list{grid-template-columns:1fr;gap:12px;}
+      .val{font-size:17px;}
+      .btn{width:100%;}
+    }
     .row{display:contents}
-    .label{opacity:.9; align-self:center}
+    .label{opacity:.9; align-self:center; font-size:17px;}
     .val{
       font-family:var(--mono);
       border:1px solid var(--line);
       border-radius:10px;
-      padding:10px 12px;
+      padding:12px 14px;
       color:var(--gold);
       background:transparent;
       overflow:auto;
+      font-size:17px;
     }
     .btn{
       border:2px solid var(--gold);
       color:var(--gold);
       background:transparent;
       border-radius:10px;
-      padding:10px 12px;
+      padding:12px 14px;
       cursor:pointer;
       font-weight:600;
+      font-size:17px;
       transition:0.15s ease-in-out;
     }
     .btn:active{transform:scale(.98)}
     .btn:hover{background:rgba(255,215,0,0.1)}
-    .controls{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap}
-    .footer{margin-top:18px; font-size:13px; opacity:.85}
-    .divider{height:1px; background:var(--line); margin:18px 0}
-    a{color:var(--gold); text-decoration:none}
+    .controls{
+      display:flex;
+      gap:10px;
+      margin-top:18px;
+      flex-wrap:wrap;
+    }
+    .divider{height:1px; background:var(--line); margin:20px 0}
   </style>
 </head>
 <body>
@@ -82,14 +93,10 @@
       <div class="controls">
         <button class="btn" id="copyAllBtn" type="button">Copy all</button>
       </div>
-
-      <div class="divider"></div>
-      <div class="footer" id="updated"></div>
     </section>
   </main>
 
 <script>
-/* ---- Fill your real values below ---- */
 const DATA = [
   {label:"Name",            value:"YOUR COMPANY GmbH (YOUR SHORT NAME)"},
   {label:"Account Number",  value:"12345678"},
@@ -129,11 +136,10 @@ function render(){
 
     const R2 = el('div','row');
     R2.appendChild(V);
-    R2.appendChild(el('div')); // grid spacer
+    R2.appendChild(el('div')); // spacer
     fields.appendChild(R2);
   });
 
-  // Copy all button
   copyAllBtn.onclick = async ()=>{
     const all = DATA.map(r=>`${r.label}: ${r.value}`).join('\n');
     try{
@@ -143,14 +149,7 @@ function render(){
       alert('Copy failed. Your browser may block clipboard.');
     }
   };
-
-  // Last updated
-  const u = new Date(document.lastModified);
-  const pad = n => String(n).padStart(2,'0');
-  const stamp = `${pad(u.getDate())}.${pad(u.getMonth()+1)}.${u.getFullYear()} ${pad(u.getHours())}:${pad(u.getMinutes())}`;
-  document.getElementById('updated').textContent = 'Last updated: ' + stamp;
 }
-
 render();
 </script>
 </body>
