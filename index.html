@@ -3,58 +3,75 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <!-- Чтобы страницу не индексировали поисковики (оставьте, если нужны “только по ссылке”) -->
   <meta name="robots" content="noindex,nofollow" />
   <title>Реквизиты для оплаты / Invoice details</title>
   <style>
-    :root{--bg:#0f172a;--card:#111827;--txt:#e5e7eb;--muted:#9ca3af;--acc:#22d3ee}
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Arial}
-    .wrap{max-width:860px;margin:40px auto;padding:24px}
-    .card{background:var(--card);border-radius:16px;padding:24px 20px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
-    h1{margin:0 0 4px;font-size:28px}
-    .muted{color:var(--muted);margin:0 0 20px}
-    .lang{display:flex;gap:8px;margin-bottom:16px}
-    .lang button{background:#1f2937;color:#e5e7eb;border:1px solid #374151;border-radius:10px;padding:8px 10px;cursor:pointer}
-    .lang button.active{border-color:var(--acc)}
-    .grid{display:grid;grid-template-columns:1fr auto;gap:10px 10px}
+    :root{
+      --bg:#ffffff; --txt:#111827; --muted:#6b7280; --line:#e5e7eb; --btn:#111827; --btn-txt:#ffffff;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --radius:12px;
+    }
+    @media (prefers-color-scheme: dark){
+      :root{ --bg:#0b0f17; --txt:#e5e7eb; --muted:#94a3b8; --line:#1f2937; --btn:#1f2937; --btn-txt:#e5e7eb; }
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    .wrap{max-width:820px;margin:40px auto;padding:0 16px}
+    h1{margin:0 0 6px;font-size:28px}
+    p{margin:0}
+    .muted{color:var(--muted)}
+    .panel{border:1px solid var(--line); border-radius: var(--radius); padding:20px; margin-top:16px}
+    .lang{display:flex; gap:8px; margin-top:12px}
+    .lang button{border:1px solid var(--line); background:transparent; color:var(--txt); padding:6px 10px; border-radius:10px; cursor:pointer}
+    .lang button[aria-pressed="true"]{outline:2px solid var(--line)}
+    .list{display:grid; grid-template-columns: 1fr auto; gap:10px 10px; margin-top:10px}
     .row{display:contents}
-    .label{color:var(--muted)}
-    .value{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;background:#0b1220;border:1px solid #243045;border-radius:10px;padding:10px 12px;overflow:auto}
-    .copy{background:#0b1220;border:1px solid #243045;border-radius:10px;cursor:pointer;padding:10px 12px}
-    .copy:active{transform:scale(.99)}
-    .note{margin-top:14px;color:var(--muted);font-size:14px}
-    .section{margin-top:22px;border-top:1px solid #1f2937;padding-top:16px}
-    a{color:var(--acc);text-decoration:none}
-    .footer{margin-top:24px;color:#94a3b8;font-size:13px}
+    .label{color:var(--muted); align-self:center}
+    .val{font-family:var(--mono); border:1px solid var(--line); border-radius:10px; padding:10px 12px; overflow:auto}
+    .btn{border:1px solid var(--line); background:var(--btn); color:var(--btn-txt); border-radius:10px; padding:10px 12px; cursor:pointer}
+    .btn:active{transform:scale(.99)}
+    .note{margin-top:12px; color:var(--muted); font-size:14px}
+    .controls{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap}
+    .footer{margin-top:22px; color:var(--muted); font-size:13px}
+    a{color:inherit}
+    .divider{height:1px; background:var(--line); margin:18px 0}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
+  <main class="wrap" role="main">
+    <header>
       <h1 id="title">Реквизиты для оплаты</h1>
-      <p class="muted" id="subtitle">Сканируйте, копируйте — всё поля кликабельны</p>
+      <p id="subtitle" class="muted">Нажмите «Скопировать» рядом с нужным полем или «Скопировать всё» ниже</p>
+      <div class="lang" role="tablist" aria-label="Language">
+        <button id="btnRU" role="tab" aria-selected="true" aria-pressed="true" onclick="setLang('ru')">RU</button>
+        <button id="btnEN" role="tab" aria-selected="false" aria-pressed="false" onclick="setLang('en')">EN</button>
+      </div>
+    </header>
 
-      <div class="lang">
-        <button id="btnRU" class="active" onclick="setLang('ru')">RU</button>
-        <button id="btnEN" onclick="setLang('en')">EN</button>
+    <section class="panel" aria-labelledby="title">
+      <div class="list" id="fields"><!-- rows inserted by JS --></div>
+
+      <div class="controls">
+        <button class="btn" id="copyAllBtn">Скопировать всё</button>
+        <span class="note" id="note"></span>
       </div>
 
-      <div class="section">
-        <div class="grid" id="fields"><!-- наполняется из JS --></div>
-        <p class="note" id="note"></p>
+      <div class="divider"></div>
+      <div class="footer">
+        <div id="footer"></div>
+        <div id="updated" class="muted" style="margin-top:6px"></div>
       </div>
-
-      <div class="footer" id="footer"></div>
-    </div>
-  </div>
+    </section>
+  </main>
 
 <script>
+/* --- Configuration: fill in your real details once, RU & EN --- */
 const DATA = {
   ru: {
     title: "Реквизиты для оплаты",
-    subtitle: "Кликните по кнопке «Copy», чтобы скопировать поле.",
-    note: "Важно: указывайте референс платежа (номер счёта) в назначении.",
-    footer: "Если что-то не открывается, напишите: billing@вашдомен.com",
+    subtitle: "Нажмите «Скопировать» рядом с полем или «Скопировать всё».",
+    note: "Обязательно указывайте reference/номер счёта в назначении платежа.",
+    footer: "Вопросы по оплате: billing@yourdomain.com",
     rows: [
       {label:"Краткое название", value:"ВАША КОМПАНИЯ GmbH"},
       {label:"Полное название (DE)", value:"Ihre Sehr Lange Firmenbezeichnung Gesellschaft mit beschränkter Haftung"},
@@ -62,15 +79,14 @@ const DATA = {
       {label:"IBAN", value:"DE12 3456 7890 1234 5678 90"},
       {label:"BIC / SWIFT", value:"ABCDEFGHXXX"},
       {label:"Банк", value:"Musterbank AG"},
-      {label:"Ссылка на счёт (Invoice #)", value:"INV-2025-00123"},
-      {label:"Назначение платежа (reference)", value:"INV-2025-00123  |  Client: ACME LTD"}
+      {label:"Назначение платежа / reference", value:"INV-2025-00123  |  Client: ACME LTD"}
     ]
   },
   en: {
     title: "Invoice payment details",
-    subtitle: "Click “Copy” to copy any field.",
+    subtitle: "Click “Copy” next to any field or use “Copy all”.",
     note: "Please include the payment reference (invoice number) in the transfer.",
-    footer: "Questions? Email us at billing@yourdomain.com",
+    footer: "Billing questions: billing@yourdomain.com",
     rows: [
       {label:"Company (short)", value:"YOUR COMPANY GmbH"},
       {label:"Registered name (DE)", value:"Ihre Sehr Lange Firmenbezeichnung Gesellschaft mit beschränkter Haftung"},
@@ -78,46 +94,39 @@ const DATA = {
       {label:"IBAN", value:"DE12 3456 7890 1234 5678 90"},
       {label:"BIC / SWIFT", value:"ABCDEFGHXXX"},
       {label:"Bank", value:"Musterbank AG"},
-      {label:"Invoice #", value:"INV-2025-00123"},
       {label:"Payment reference", value:"INV-2025-00123  |  Client: ACME LTD"}
     ]
   }
 };
 
+/* --- Render & interactions --- */
+const fields = document.getElementById('fields');
+const btnRU = document.getElementById('btnRU');
+const btnEN = document.getElementById('btnEN');
+const copyAllBtn = document.getElementById('copyAllBtn');
+
 function el(tag, cls, txt){ const e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
+
+function setLang(lang){
+  localStorage.setItem('lang', lang);
+  render(lang);
+}
 
 function render(lang){
   const d = DATA[lang];
+  document.documentElement.lang = lang === 'ru' ? 'ru' : 'en';
   document.getElementById('title').textContent = d.title;
   document.getElementById('subtitle').textContent = d.subtitle;
   document.getElementById('note').textContent = d.note;
   document.getElementById('footer').textContent = d.footer;
-  const fields = document.getElementById('fields');
+
+  btnRU.setAttribute('aria-pressed', String(lang==='ru'));
+  btnEN.setAttribute('aria-pressed', String(lang==='en'));
+  btnRU.setAttribute('aria-selected', String(lang==='ru'));
+  btnEN.setAttribute('aria-selected', String(lang==='en'));
+
   fields.innerHTML = '';
   d.rows.forEach(row=>{
-    const L = el('div','row');
-    const lab = el('div','label',row.label);
-    const copyBtn = el('button','copy','Copy');
-    const val = el('div','value',row.value);
-    copyBtn.addEventListener('click', async ()=>{
-      try { await navigator.clipboard.writeText(row.value); copyBtn.textContent='Copied!'; setTimeout(()=>copyBtn.textContent='Copy',1200);}
-      catch(e){ alert('Copy failed — your browser may block clipboard.'); }
-    });
-    L.appendChild(lab);
-    L.appendChild(copyBtn);
-    fields.appendChild(L);
-    const V = el('div','row');
-    V.appendChild(val);
-    V.appendChild(el('div')); // пустая ячейка, чтобы сетка была ровной
-    fields.appendChild(V);
-  });
-
-  // переключатель кнопок
-  document.getElementById('btnRU').classList.toggle('active', lang==='ru');
-  document.getElementById('btnEN').classList.toggle('active', lang==='en');
-}
-function setLang(l){ localStorage.setItem('lang', l); render(l); }
-render(localStorage.getItem('lang')||'ru');
-</script>
-</body>
-</html>
+    const R = el('div','row');
+    const L = el('div','label',row.label);
+    const B = el('button','btn'); B.type='button'; B.tex
