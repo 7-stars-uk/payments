@@ -8,7 +8,7 @@
   <style>
     :root{
       --bg:#000000;
-      --gold:#ffd700;        /* bright gold */
+      --gold:#ffd700;         /* bright gold */
       --line:#333333;
       --radius:12px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -40,16 +40,12 @@
       margin-top:16px;
     }
 
-    /* layout */
+    /* two-column header row (label + button), value on full width below */
     .list{
       display:grid;
-      grid-template-columns: 1fr auto;
-      gap:14px 10px;
+      grid-template-columns: 1fr auto; /* keep TWO columns even on mobile */
+      gap:14px 12px;
       margin-top:6px;
-    }
-    @media (max-width:600px){
-      .list{grid-template-columns:1fr; gap:14px;}
-      .btn{width:100%;}
     }
     .row{display:contents}
 
@@ -59,10 +55,14 @@
       font-size:20px;
       font-weight:800;
       letter-spacing:.2px;
+      line-height:1.2;
+      padding-right:10px;
+      word-break:break-word;
     }
 
-    /* values */
+    /* value box */
     .val{
+      grid-column: 1 / -1;        /* value spans full width below */
       font-family:var(--mono);
       border:1px solid var(--line);
       border-radius:10px;
@@ -79,13 +79,14 @@
       color:var(--gold);
       background:transparent;
       border-radius:10px;
-      padding:12px 14px;
+      padding:10px 14px;
       cursor:pointer;
       font-weight:700;
-      font-size:17px;
+      font-size:16px;
       transition:box-shadow .15s ease, transform .08s ease, background .15s ease;
-      box-shadow:0 0 0 rgba(255,215,0,0); /* base */
+      box-shadow:0 0 0 rgba(255,215,0,0);
       touch-action:manipulation;
+      white-space:nowrap;
     }
     .btn:hover,
     .btn:focus-visible,
@@ -100,8 +101,6 @@
       transform:scale(.98);
       box-shadow:0 0 12px rgba(255,215,0,.45), 0 0 2px rgba(255,215,0,.85) inset;
     }
-
-    .divider{height:1px; background:var(--line); margin:20px 0}
   </style>
 </head>
 <body>
@@ -117,11 +116,12 @@
   </main>
 
 <script>
+/* --- Your live details --- */
 const DATA = [
-  {label:"Name",            value:"YOUR COMPANY GmbH (YOUR SHORT NAME)"},
-  {label:"Account Number",  value:"12345678"},
-  {label:"Sort Code",       value:"12-34-56"},
-  {label:"RevTag",          value:"INV-2025-00123 | Client: ACME LTD"}
+  {label:"Name",           value:"KlimaTec Sanierungskonzepte UG (haftungsbeschränkt)"},
+  {label:"Account Number", value:"61401289"},
+  {label:"Sort Code",      value:"23-01-20"},
+  {label:"RevTag",         value:"@klimatf0da"}
 ];
 
 const fields = document.getElementById('fields');
@@ -136,12 +136,11 @@ function el(tag, cls, txt){
 function render(){
   fields.innerHTML = '';
   DATA.forEach(row=>{
-    // row header: label + button
-    const R = el('div','row');
+    // header line: label on the left, copy button on the right (same line)
     const L = el('div','label',row.label);
-    const B = el('button','btn'); B.type='button'; B.textContent='Copy';
+    const B = el('button','btn'); B.type='button'; B.textContent='Copy'; B.setAttribute('aria-label','Copy '+row.label);
 
-    // row value
+    // value line spans full width
     const V = el('div','val',row.value);
 
     // interactions
@@ -149,7 +148,6 @@ function render(){
       B.classList.add('glow');
       setTimeout(()=>B.classList.remove('glow'), 250);
     };
-
     B.addEventListener('click', async ()=>{
       try{
         await navigator.clipboard.writeText(row.value);
@@ -159,17 +157,12 @@ function render(){
         alert('Copy failed. Your browser may block clipboard.');
       }
     });
-
-    // add a quick glow on touchstart for mobile feedback
     B.addEventListener('touchstart', glowPulse, {passive:true});
 
-    R.appendChild(L); R.appendChild(B);
-    fields.appendChild(R);
-
-    const R2 = el('div','row');
-    R2.appendChild(V);
-    R2.appendChild(el('div')); // spacer for grid alignment
-    fields.appendChild(R2);
+    // append: header cells (label + button), then value (full width)
+    fields.appendChild(L);
+    fields.appendChild(B);
+    fields.appendChild(V);
   });
 }
 
